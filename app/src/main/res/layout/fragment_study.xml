@@ -12,7 +12,57 @@
         android:padding="16dp">
 
         <Button
+            android:id="@+id/button_hide"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="Main"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button_study"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Учить"
+            app:layout_constraintTop_toBottomOf="@+id/button_hide"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_study"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/button_study" />
+        
+        <Button
+            android:id="@+id/button_base1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Base 1"
+            android:alpha="0.5"
+            android:clickable="false"
+            app:layout_constraintTop_toBottomOf="@id/rv_study" />
+
+        <Button
+            android:id="@+id/button_base2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Base 2"
+            android:alpha="0.5"
+            android:clickable="false"
+            app:layout_constraintTop_toBottomOf="@id/button_base1" />
+
+        <Button
+            android:id="@+id/button_base3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Base 3"
+            android:alpha="0.5"
+            android:clickable="false"
+            app:layout_constraintTop_toBottomOf="@id/button_base2" />
+
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
