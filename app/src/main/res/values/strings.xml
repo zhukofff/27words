@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">27 words</string>
+    <string name="english">English</string>
+    <string name="russian">Russian</string>
+    <string name="change_language">change language</string>
+    <string name="firstLang">Русский</string>
+    <string name="add_to_dictionary">Add to dictionary</string>
+    <string name="englishEditTextHint">Enter the meaning of the word in English</string>
+    <string name="russianEditTextHint">Enter the meaning of the word in Russian</string>
+    <string name="translated_by_yandex">Переведено сервисом «Яндекс.Переводчик»</string>
+    <string name="profile_settings">Profile Settings</string>
+</resources>
