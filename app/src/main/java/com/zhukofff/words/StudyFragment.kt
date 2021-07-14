@@ -18,6 +18,7 @@ class StudyFragment : Fragment() {
     lateinit var sharedPreferences: SharedPreferences
     lateinit var dict : ArrayList<String>
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

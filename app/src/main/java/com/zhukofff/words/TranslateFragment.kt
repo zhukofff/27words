@@ -5,24 +5,34 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.zhukofff.words.databinding.FragmentTranslateBinding
+import org.json.JSONObject
 
 class TranslateFragment : Fragment() {
 
-    private lateinit var binding : FragmentTranslateBinding
+    private lateinit var binding: FragmentTranslateBinding
     lateinit var sharedPreference: SharedPreferences
-    private val apiKey = "dict.1.1.20191113T195139Z.4c9beedf28f906fa.c7c3b41be62bf79ba48a96bf1079d96e5db6562d"
+    private val apiKey =
+        "dict.1.1.20191113T195139Z.4c9beedf28f906fa.c7c3b41be62bf79ba48a96bf1079d96e5db6562d"
     private val lang1 = "en-ru"
     private val lang2 = "ru-en"
+    private val translateViewModel = TranslateViewModel()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) : View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentTranslateBinding.inflate(inflater, container, false)
-        sharedPreference = this.requireActivity().getSharedPreferences("com.zhukofff.words", Context.MODE_PRIVATE)
+        sharedPreference =
+            this.requireActivity().getSharedPreferences("com.zhukofff.words", Context.MODE_PRIVATE)
 
         binding.creatingByUbc.setOnClickListener {
             goToLink("ds.ubc.one")
@@ -38,22 +48,13 @@ class TranslateFragment : Fragment() {
 
         binding.translate.setOnClickListener {
             // maybe realise hide keyboard method
-            val text : String = binding.editFirstLanguage.text.toString()
-            if (text == null || text.equals("")) {
-                Toast.makeText(requireContext(),
-                    "Вы не ввели слово.",
-                    Toast.LENGTH_SHORT).
-                        show()
-            } else if (isAlphabet(text)) {
-                val url : String = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=" + apiKey + "&text=" + text + "&lang=" + lang2
-                // how to download html?
-            }
+
         }
 
         return binding.root
     }
 
-    private fun goToLink(link : String) {
+    private fun goToLink(link: String) {
         val page: Intent = Intent(Intent.ACTION_VIEW)
         page.setData(Uri.parse(link))
         startActivity(page)
@@ -65,26 +66,71 @@ class TranslateFragment : Fragment() {
             Language.English.toString() -> switchToRussian()
             Language.Russian.toString() -> switchToEnglish()
         }
+        binding.translate.setOnClickListener {
 
+        }
     }
 
     private fun switchToRussian() {
         binding.textFirstLanguage.text = "${getString(R.string.russian)}"
         binding.textSecondLanguage.text = "${getString(R.string.english)}"
-        binding.editFirstLanguage.hint =  "${getString(R.string.russianEditTextHint)}"
+        binding.editFirstLanguage.hint = "${getString(R.string.russianEditTextHint)}"
         binding.editSecondLanguage.hint = "${getString(R.string.englishEditTextHint)}"
     }
 
     private fun switchToEnglish() {
         binding.textFirstLanguage.text = "${getString(R.string.english)}"
         binding.textSecondLanguage.text = "${getString(R.string.russian)}"
-        binding.editFirstLanguage.hint =  "${getString(R.string.englishEditTextHint)}"
+        binding.editFirstLanguage.hint = "${getString(R.string.englishEditTextHint)}"
         binding.editSecondLanguage.hint = "${getString(R.string.russianEditTextHint)}"
     }
 
-    private fun isAlphabet(text : String) : Boolean{
+    private fun isAlphabet(text: String): Boolean {
         return text.all {
             it.isLetter()
+        }
+    }
+
+    private fun translate() {
+        val text: String = binding.editFirstLanguage.text.toString()
+        if (text == null || text.equals("")) {
+            Toast.makeText(
+                requireContext(),
+                "Вы не ввели слово.",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else if (isAlphabet(text)) {
+            val url: String =
+                "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=" + apiKey + "&text=" + text + "&lang=" + lang2
+            try {
+                binding.editSecondLanguage.text = "" as Editable
+                val translatedWords = ArrayList<String>()
+                val translatedWordsAdapter = ArrayAdapter<String>(
+                    requireContext(),
+                    android.R.layout.simple_list_item_1,
+                    translatedWords
+                )
+                binding.listOfTranslatedWords.adapter = translatedWordsAdapter
+                translateViewModel.downloadHtml(url)
+                val jsonObject = JSONObject(translateViewModel.translatedWords)
+                val defArray = jsonObject.getJSONArray("def")
+                if (defArray.length() == 0)
+                    binding.editSecondLanguage.text = binding.editFirstLanguage.text
+                else {
+                    for (i in 0..defArray.length()) {
+                        val defObject = defArray.getJSONObject(i)
+                        val trArray = defObject.getJSONArray("tr")
+                        for (j in 0..trArray.length()) {
+                            val trArrayItem = trArray.getJSONObject(j)
+                            translatedWords.add(trArrayItem.getString("text"))
+                        }
+                    }
+                    translatedWordsAdapter.notifyDataSetChanged()
+                    binding.editSecondLanguage.text = translatedWords.get(0) as Editable
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }
