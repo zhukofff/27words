@@ -1,5 +1,6 @@
 package com.zhukofff.words
 
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
@@ -12,11 +13,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.zhukofff.words.databinding.FragmentStudyBinding
 
-class StudyFragment : Fragment() {
+open class StudyFragment : Fragment() {
 
     private lateinit var binding : FragmentStudyBinding
     lateinit var sharedPreferences: SharedPreferences
-    lateinit var dict : ArrayList<String>
+    var dict = ArrayList<String>()
+    lateinit var wordsAdapter : WordsAdapter
 
 
     override fun onCreateView(
@@ -39,10 +41,25 @@ class StudyFragment : Fragment() {
                 binding.buttonStudy.visibility = View.VISIBLE
             }
         }
+
+        sharedPreferences = requireActivity().getSharedPreferences("com.zhukofff.words", Context.MODE_PRIVATE)
+        if (!sharedPreferences.getString("dict", "").equals("")) {
+            try {
+                sharedPreferences.getString("dict", "")?.let { dict.add(it) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+        }
+        wordsAdapter = WordsAdapter(dict)
+        binding.rvStudy.adapter = wordsAdapter
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
+    }
     var dialogClickListener =
         DialogInterface.OnClickListener { dialog, which ->
             val intent : Intent

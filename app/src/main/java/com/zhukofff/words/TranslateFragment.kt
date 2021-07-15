@@ -47,8 +47,11 @@ class TranslateFragment : Fragment() {
         }
 
         binding.translate.setOnClickListener {
-            // maybe realise hide keyboard method
+            translate()
+        }
 
+        binding.addToDict.setOnClickListener {
+                addToDictionary()
         }
 
         return binding.root
@@ -133,4 +136,43 @@ class TranslateFragment : Fragment() {
             }
         }
     }
+
+    private fun addToDictionary() {
+        if (binding.editFirstLanguage.text != null && binding.editFirstLanguage.text != "" as Editable &&
+            binding.editSecondLanguage.text != null && binding.editSecondLanguage.text != "" as Editable
+        ) {
+
+            val engWord: String; val rusWord: String
+            if (binding.textFirstLanguage.text == getString(R.string.english) as Editable) {
+                engWord = binding.textFirstLanguage.text.toString()
+                rusWord = binding.textSecondLanguage.text.toString()
+            } else {
+                engWord = binding.textSecondLanguage.text.toString()
+                rusWord = binding.textSecondLanguage.text.toString()
+            }
+
+            if (translateViewModel.isPairOfWordsInDict(engWord, rusWord)) {
+                Toast.makeText(
+                    requireContext(),
+                    "Эта пара слов уже есть в словаре",
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                translateViewModel.addToDictionary(engWord, rusWord)
+                try {
+                    sharedPreference.edit().putString("dict", translateViewModel.studyFragment.dict.get(translateViewModel.studyFragment.dict.size)).apply()
+                    sharedPreference.edit().putString("dict", translateViewModel.studyFragment.dict.get(translateViewModel.studyFragment.dict.size - 1)).apply()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        } else {
+            Toast.makeText(
+                requireContext(),
+                "Добавлять нечего",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
 }

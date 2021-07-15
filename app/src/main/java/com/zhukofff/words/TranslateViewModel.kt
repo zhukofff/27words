@@ -1,5 +1,6 @@
 package com.zhukofff.words
 
+import android.text.Editable
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.*
 import java.io.InputStream
@@ -7,11 +8,14 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.coroutines.CoroutineContext
+import com.zhukofff.words.StudyFragment
 
 class TranslateViewModel : ViewModel(), CoroutineScope {
 
     private val job = SupervisorJob()
+    val studyFragment = StudyFragment()
     var translatedWords : String = ""
+
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job + CoroutineExceptionHandler { _, e -> throw e }
 
@@ -32,6 +36,23 @@ class TranslateViewModel : ViewModel(), CoroutineScope {
             translatedWords += data
             data = reader.read()
         }
+
+    }
+
+    fun isPairOfWordsInDict(engWord: String, rusWord: String) : Boolean {
+        for (i in 0 .. studyFragment.dict.size step 2) {
+            if (studyFragment.dict.get(i).equals(engWord) && studyFragment.dict.get(i+1).equals(rusWord))
+                return true
+        }
+        return false
+    }
+
+    fun addToDictionary(engWord: String, rusWord: String) {
+        studyFragment.dict.add(engWord)
+        studyFragment.dict.add(rusWord)
+
+        with(studyFragment) { wordsAdapter!!.notifyDataSetChanged() }
+
     }
 
 }

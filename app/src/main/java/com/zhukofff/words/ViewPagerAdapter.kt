@@ -1,14 +1,14 @@
 package com.zhukofff.words
 
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.fragment.app.Fragment
 
 class ViewPagerAdapter(manager : FragmentManager) :
     FragmentPagerAdapter(manager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
-    private val fragmentList : ArrayList<Fragment> ?= null
-    private val fragmentListTitles : MutableList<String> ?= null
+    private val fragmentList: MutableList<Fragment> = ArrayList()
+    private val fragmentListTitles: MutableList<String> = ArrayList()
 
 
     override fun getItem(position : Int) : Fragment {
@@ -24,8 +24,8 @@ class ViewPagerAdapter(manager : FragmentManager) :
     }
 
     fun addFragment(fragment : Fragment, name : String){
-        fragmentList!!.add(fragment)
-        fragmentListTitles!!.add(name)
+        fragmentList.add(fragment)
+        fragmentListTitles.add(name)
     }
 
 }
