@@ -12,19 +12,29 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import com.zhukofff.words.databinding.FragmentTranslateBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-class TranslateFragment : Fragment() {
+class TranslateFragment : Fragment(){
 
     private lateinit var binding: FragmentTranslateBinding
     lateinit var sharedPreference: SharedPreferences
     private val apiKey =
-        "dict.1.1.20191113T195139Z.4c9beedf28f906fa.c7c3b41be62bf79ba48a96bf1079d96e5db6562d"
+        "dict.1.1.20210824T194936Z.5698033a1adbc74d.a86d9902160b14f05e95876b2735786b9cb5224d"
     private val lang1 = "en-ru"
     private val lang2 = "ru-en"
     private val translateViewModel = TranslateViewModel()
+    private lateinit var jsonObject : JSONObject
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -33,7 +43,31 @@ class TranslateFragment : Fragment() {
         binding = FragmentTranslateBinding.inflate(inflater, container, false)
         sharedPreference =
             this.requireActivity().getSharedPreferences("com.zhukofff.words", Context.MODE_PRIVATE)
+        val translateWordsObserver = Observer<ArrayList<String>> {
+            val translatedWordsAdapter = ArrayAdapter<String>(
+                requireContext(),
+                android.R.layout.simple_list_item_1,
+                it
+            )
+            if (it.size > 0) {
+                binding.editSecondLanguage.setText(it.get(0))
+                binding.listOfTranslatedWords.adapter = translatedWordsAdapter
+            } else {
+                binding.editSecondLanguage.text = binding.editFirstLanguage.text
+            }
+        }
 
+        translateViewModel.translatedWords.observe(viewLifecycleOwner, translateWordsObserver)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        var translatedWordsAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
+            requireContext(),
+            android.R.layout.simple_list_item_1,
+        )
         binding.creatingByUbc.setOnClickListener {
             goToLink("ds.ubc.one")
         }
@@ -51,10 +85,12 @@ class TranslateFragment : Fragment() {
         }
 
         binding.addToDict.setOnClickListener {
-                addToDictionary()
+/*
+            addToDictionary()
+*/
         }
 
-        return binding.root
+
     }
 
     private fun goToLink(link: String) {
@@ -64,13 +100,10 @@ class TranslateFragment : Fragment() {
     }
 
     private fun switchLanguage() {
-        var firstLanguage = binding.textFirstLanguage.toString()
+        var firstLanguage = binding.textFirstLanguage.text.toString()
         when (firstLanguage) {
             Language.English.toString() -> switchToRussian()
             Language.Russian.toString() -> switchToEnglish()
-        }
-        binding.translate.setOnClickListener {
-
         }
     }
 
@@ -95,49 +128,27 @@ class TranslateFragment : Fragment() {
     }
 
     private fun translate() {
-        val text: String = binding.editFirstLanguage.text.toString()
-        if (text == null || text.equals("")) {
+        val text = binding.editFirstLanguage.text.toString()
+        if (text.equals("")) {
             Toast.makeText(
                 requireContext(),
                 "Вы не ввели слово.",
                 Toast.LENGTH_SHORT
             ).show()
         } else if (isAlphabet(text)) {
-            val url: String =
-                "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=" + apiKey + "&text=" + text + "&lang=" + lang2
-            try {
-                binding.editSecondLanguage.text = "" as Editable
-                val translatedWords = ArrayList<String>()
-                val translatedWordsAdapter = ArrayAdapter<String>(
-                    requireContext(),
-                    android.R.layout.simple_list_item_1,
-                    translatedWords
-                )
-                binding.listOfTranslatedWords.adapter = translatedWordsAdapter
-                translateViewModel.downloadHtml(url)
-                val jsonObject = JSONObject(translateViewModel.translatedWords)
-                val defArray = jsonObject.getJSONArray("def")
-                if (defArray.length() == 0)
-                    binding.editSecondLanguage.text = binding.editFirstLanguage.text
-                else {
-                    for (i in 0..defArray.length()) {
-                        val defObject = defArray.getJSONObject(i)
-                        val trArray = defObject.getJSONArray("tr")
-                        for (j in 0..trArray.length()) {
-                            val trArrayItem = trArray.getJSONObject(j)
-                            translatedWords.add(trArrayItem.getString("text"))
-                        }
-                    }
-                    translatedWordsAdapter.notifyDataSetChanged()
-                    binding.editSecondLanguage.text = translatedWords.get(0) as Editable
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            var lang = ""
+            if (binding.textFirstLanguage.text == "English") {
+                lang = lang1
+            } else {
+                lang = lang2
             }
+            val url: String =
+                "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=" + apiKey + "&text=" + text + "&lang=" + lang
+            translateViewModel.downloadHtml(url)
         }
     }
 
-    private fun addToDictionary() {
+    /*private fun addToDictionary() {
         if (binding.editFirstLanguage.text != null && binding.editFirstLanguage.text != "" as Editable &&
             binding.editSecondLanguage.text != null && binding.editSecondLanguage.text != "" as Editable
         ) {
@@ -173,6 +184,6 @@ class TranslateFragment : Fragment() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-    }
+    }*/
 
 }

@@ -14,7 +14,7 @@ class WordsAdapter(dict: ArrayList<String>) : RecyclerView.Adapter<WordsAdapter.
     private var dictWithPairOfWords = ArrayList<String>(dict.size/2)
 
     init {
-        for (i in 0..dictWithPairOfWords.size) {
+        for (i in 0 until dictWithPairOfWords.size) {
             dictWithPairOfWords.add(dict.get(i*2) + " - " + dict.get(i*2+1))
         }
         Collections.sort(dictWithPairOfWords)
@@ -35,7 +35,7 @@ class WordsAdapter(dict: ArrayList<String>) : RecyclerView.Adapter<WordsAdapter.
     class WordViewHolder(private val binding: WordItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(word: String) {
-            binding.textWordItem.text = word as Editable
+            binding.textWordItem.setText(word)
         }
         companion object {
             fun from(parent: ViewGroup) : WordViewHolder {

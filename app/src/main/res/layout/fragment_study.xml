@@ -63,7 +63,5 @@
             android:clickable="false"
             app:layout_constraintTop_toBottomOf="@id/button_base2" />
 
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

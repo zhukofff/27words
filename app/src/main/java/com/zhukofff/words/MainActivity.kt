@@ -4,8 +4,14 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
+import com.google.android.material.tabs.TabLayoutMediator
 import com.zhukofff.words.databinding.ActivityMainBinding
 
+val fragmentArray = arrayOf(
+    "translate",
+    "study",
+    "read"
+)
 class MainActivity : AppCompatActivity() {
 
     private val binding : ActivityMainBinding by lazy {
@@ -16,34 +22,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        val adapter : ViewPagerAdapter = ViewPagerAdapter(supportFragmentManager)
-
-        adapter.addFragment(TranslateFragment(), "Translate")
-        adapter.addFragment(StudyFragment(), "Study")
-
+        val adapter = ViewPagerAdapter(supportFragmentManager, lifecycle)
         binding.viewPager.adapter = adapter
-        binding.tabLayout.setupWithViewPager(binding.viewPager)
-
-        binding.viewPager.addOnPageChangeListener(object: OnPageChangeListener {
-            override fun onPageScrolled(
-                position: Int,
-                positionOffset: Float,
-                positionOffsetPixels: Int
-            ) {
-
-            }
-
-            override fun onPageScrollStateChanged(state: Int) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onPageSelected(position: Int) {
-                TODO("Not yet implemented")
-            }
-
-        })
-        // TODO: after creating translate, study, about fragments need to add
-        // them using addFragment() method
-        //adapter.addFragment()
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = fragmentArray[position]
+        }.attach()
     }
 }

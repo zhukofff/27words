@@ -49,17 +49,16 @@ open class StudyFragment : Fragment() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
         }
-        wordsAdapter = WordsAdapter(dict)
-        binding.rvStudy.adapter = wordsAdapter
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        wordsAdapter = WordsAdapter(dict)
+        binding.rvStudy.adapter = wordsAdapter
     }
+
     var dialogClickListener =
         DialogInterface.OnClickListener { dialog, which ->
             val intent : Intent
@@ -93,3 +92,5 @@ open class StudyFragment : Fragment() {
     }
 
 }
+
+// Характер ошибки на данный момент -- это передаётся пустой словарь

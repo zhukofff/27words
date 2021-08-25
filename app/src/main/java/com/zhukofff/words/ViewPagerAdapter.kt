@@ -1,31 +1,24 @@
 package com.zhukofff.words
 
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.lifecycle.Lifecycle
+import androidx.viewpager2.adapter.FragmentStateAdapter
 
-class ViewPagerAdapter(manager : FragmentManager) :
-    FragmentPagerAdapter(manager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+private const val NUM_TABS = 2
 
-    private val fragmentList: MutableList<Fragment> = ArrayList()
-    private val fragmentListTitles: MutableList<String> = ArrayList()
+class ViewPagerAdapter(fm: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fm, lifecycle){
 
-
-    override fun getItem(position : Int) : Fragment {
-        return fragmentList!!.get(position)
+    override fun getItemCount(): Int {
+        return NUM_TABS
     }
 
-    override fun getCount() : Int {
-        return fragmentList!!.size
+    override fun createFragment(position: Int): Fragment {
+        when(position) {
+            0 -> return TranslateFragment()
+        }
+        return StudyFragment()
     }
-
-    override fun getPageTitle(position: Int) : CharSequence {
-        return fragmentListTitles!!.get(position)
-    }
-
-    fun addFragment(fragment : Fragment, name : String){
-        fragmentList.add(fragment)
-        fragmentListTitles.add(name)
-    }
-
 }
