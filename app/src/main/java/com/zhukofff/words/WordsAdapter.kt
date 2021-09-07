@@ -9,12 +9,11 @@ import com.zhukofff.words.databinding.WordItemBinding
 import java.util.*
 import kotlin.collections.ArrayList
 
-class WordsAdapter(dict: ArrayList<String>) : RecyclerView.Adapter<WordsAdapter.WordViewHolder>() {
+class WordsAdapter(private val dict: List<String>) : RecyclerView.Adapter<WordsAdapter.WordViewHolder>() {
 
-    private var dictWithPairOfWords = ArrayList<String>(dict.size/2)
-
+    private var dictWithPairOfWords = ArrayList<String>()
     init {
-        for (i in 0 until dictWithPairOfWords.size) {
+        for (i in 0 until dict.size/2) {
             dictWithPairOfWords.add(dict.get(i*2) + " - " + dict.get(i*2+1))
         }
         Collections.sort(dictWithPairOfWords)
@@ -29,7 +28,7 @@ class WordsAdapter(dict: ArrayList<String>) : RecyclerView.Adapter<WordsAdapter.
     }
 
     override fun getItemCount(): Int {
-        return dictWithPairOfWords.size
+        return dict.size/2
     }
 
     class WordViewHolder(private val binding: WordItemBinding) : RecyclerView.ViewHolder(binding.root) {

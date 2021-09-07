@@ -1,26 +1,30 @@
 package com.zhukofff.words
 
-import android.R
-import android.text.Editable
-import android.widget.ArrayAdapter
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.*
+import org.json.JSONObject
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.coroutines.CoroutineContext
-import com.zhukofff.words.StudyFragment
-import org.json.JSONObject
 
 
-class TranslateViewModel : ViewModel(), CoroutineScope {
+class TranslateViewModel(private val prefRepository: PrefRepository) : ViewModel(), CoroutineScope {
 
     private val job = SupervisorJob()
-    val studyFragment = StudyFragment()
-    val translatedWords = MutableLiveData<ArrayList<String>>()
+
+    private val mutableTranslatedWords = MutableLiveData<ArrayList<String?>>()
+    val translatedWords: LiveData<ArrayList<String?>> = mutableTranslatedWords
     lateinit var translate : String
+    private val list = ArrayList<String?>()
+
+    private val mutableDictionary = MutableLiveData<ArrayList<String?>>()
+    val dictionary : LiveData<ArrayList<String?>> = mutableDictionary
+
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job + CoroutineExceptionHandler { _, e -> throw e }
@@ -32,7 +36,7 @@ class TranslateViewModel : ViewModel(), CoroutineScope {
 
     fun downloadHtml(vararg urls: String?) =
         launch {
-            val translatedWordsArray = ArrayList<String>()
+            val translatedWordsArray = ArrayList<String?>()
             translate = ""
             val url: URL = URL(urls[0])
             val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
@@ -53,23 +57,31 @@ class TranslateViewModel : ViewModel(), CoroutineScope {
                     translatedWordsArray.add(trArrayItem.getString("text"))
                 }
             }
-            translatedWords.postValue(translatedWordsArray)
+            // так как поток не main, а IO -- дёргаем колбек для отработки присваивания уже после
+            // фонового потока
+            mutableTranslatedWords.postValue(translatedWordsArray)
         }
-    }
 
 
-    /*fun isPairOfWordsInDict(engWord: String, rusWord: String) : Boolean {
-        for (i in 0 .. studyFragment.dict.size step 2) {
-            if (studyFragment.dict.get(i).equals(engWord) && studyFragment.dict.get(i+1).equals(rusWord))
-                return true
+    fun isPairOfWordsInDict(engWord: String, rusWord: String) : Boolean {
+        try {
+        // доставать информацию о размере словаря из sharedPreferences
+        val dict  = prefRepository.getDictionary()
+            for (i in 0 until dict!!.size step 2) {
+                if (dict.get(i).equals(engWord) && dict.get(i + 1).equals(rusWord))
+                    return true
+            }
+        } catch(e: Exception) {
+            e.printStackTrace()
         }
         return false
     }
 
     fun addToDictionary(engWord: String, rusWord: String) {
-        studyFragment.dict.add(engWord)
-        studyFragment.dict.add(rusWord)
-
-        with(studyFragment) { wordsAdapter!!.notifyDataSetChanged() }
-
-    }*/
+        // сразу добавлять в sharedPreference
+        list.add(engWord)
+        list.add(rusWord)
+        mutableDictionary.value = list
+        prefRepository.setDictionary(mutableDictionary.value)
+    }
+}

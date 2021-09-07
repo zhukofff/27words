@@ -5,21 +5,22 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.provider.UserDictionary
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.zhukofff.words.databinding.FragmentStudyBinding
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-open class StudyFragment : Fragment() {
+class StudyFragment : Fragment() {
 
     private lateinit var binding : FragmentStudyBinding
-    lateinit var sharedPreferences: SharedPreferences
-    var dict = ArrayList<String>()
-    lateinit var wordsAdapter : WordsAdapter
-
+    private val studyViewModel by viewModel<StudyViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,6 +28,19 @@ open class StudyFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentStudyBinding.inflate(inflater, container, false)
+
+
+        val dictionaryObserver = Observer<List<String>?> { dict ->
+            val wordsAdapter = WordsAdapter(dict)
+            binding.rvStudy.adapter = wordsAdapter
+        }
+
+        studyViewModel.dictionary.observe(viewLifecycleOwner, dictionaryObserver)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         binding.buttonStudy.setOnClickListener {
             learnWords()
@@ -41,22 +55,6 @@ open class StudyFragment : Fragment() {
                 binding.buttonStudy.visibility = View.VISIBLE
             }
         }
-
-        sharedPreferences = requireActivity().getSharedPreferences("com.zhukofff.words", Context.MODE_PRIVATE)
-        if (!sharedPreferences.getString("dict", "").equals("")) {
-            try {
-                sharedPreferences.getString("dict", "")?.let { dict.add(it) }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        wordsAdapter = WordsAdapter(dict)
-        binding.rvStudy.adapter = wordsAdapter
     }
 
     var dialogClickListener =
@@ -76,7 +74,7 @@ open class StudyFragment : Fragment() {
 
 
     private fun learnWords() {
-        if (dict.size < 20) {
+        if (studyViewModel.dictionary.value!!.size < 20) {
             Toast.makeText(
                 requireContext(),
                 "Добавьте хотя бы 10 слов...",
@@ -90,7 +88,4 @@ open class StudyFragment : Fragment() {
                 .show()
         }
     }
-
 }
-
-// Характер ошибки на данный момент -- это передаётся пустой словарь

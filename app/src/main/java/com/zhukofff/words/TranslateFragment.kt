@@ -13,23 +13,25 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.zhukofff.words.databinding.FragmentTranslateBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class TranslateFragment : Fragment(){
 
     private lateinit var binding: FragmentTranslateBinding
-    lateinit var sharedPreference: SharedPreferences
     private val apiKey =
         "dict.1.1.20210824T194936Z.5698033a1adbc74d.a86d9902160b14f05e95876b2735786b9cb5224d"
     private val lang1 = "en-ru"
     private val lang2 = "ru-en"
-    private val translateViewModel = TranslateViewModel()
-    private lateinit var jsonObject : JSONObject
+    private val translateViewModel by viewModel<TranslateViewModel>()
+    private val app : App = App()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,10 +42,10 @@ class TranslateFragment : Fragment(){
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         binding = FragmentTranslateBinding.inflate(inflater, container, false)
-        sharedPreference =
-            this.requireActivity().getSharedPreferences("com.zhukofff.words", Context.MODE_PRIVATE)
-        val translateWordsObserver = Observer<ArrayList<String>> {
+
+        val translateWordsObserver = Observer<ArrayList<String?>> {
             val translatedWordsAdapter = ArrayAdapter<String>(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
@@ -58,6 +60,10 @@ class TranslateFragment : Fragment(){
         }
 
         translateViewModel.translatedWords.observe(viewLifecycleOwner, translateWordsObserver)
+
+        val dictionaryObserver = Observer<ArrayList<String?>> {
+
+        }
         return binding.root
     }
 
@@ -85,9 +91,7 @@ class TranslateFragment : Fragment(){
         }
 
         binding.addToDict.setOnClickListener {
-/*
             addToDictionary()
-*/
         }
 
 
@@ -148,18 +152,17 @@ class TranslateFragment : Fragment(){
         }
     }
 
-    /*private fun addToDictionary() {
-        if (binding.editFirstLanguage.text != null && binding.editFirstLanguage.text != "" as Editable &&
-            binding.editSecondLanguage.text != null && binding.editSecondLanguage.text != "" as Editable
-        ) {
+    private fun addToDictionary() {
+        if (binding.editFirstLanguage.text != null && binding.editFirstLanguage.text.toString() != ""  &&
+            binding.editSecondLanguage.text != null && binding.editSecondLanguage.text.toString() != "") {
 
             val engWord: String; val rusWord: String
-            if (binding.textFirstLanguage.text == getString(R.string.english) as Editable) {
-                engWord = binding.textFirstLanguage.text.toString()
-                rusWord = binding.textSecondLanguage.text.toString()
+            if (binding.textFirstLanguage.text == "English") {
+                engWord = binding.editFirstLanguage.text.toString()
+                rusWord = binding.editSecondLanguage.text.toString()
             } else {
-                engWord = binding.textSecondLanguage.text.toString()
-                rusWord = binding.textSecondLanguage.text.toString()
+                engWord = binding.editFirstLanguage.text.toString()
+                rusWord = binding.editFirstLanguage.text.toString()
             }
 
             if (translateViewModel.isPairOfWordsInDict(engWord, rusWord)) {
@@ -170,12 +173,6 @@ class TranslateFragment : Fragment(){
                 ).show()
             } else {
                 translateViewModel.addToDictionary(engWord, rusWord)
-                try {
-                    sharedPreference.edit().putString("dict", translateViewModel.studyFragment.dict.get(translateViewModel.studyFragment.dict.size)).apply()
-                    sharedPreference.edit().putString("dict", translateViewModel.studyFragment.dict.get(translateViewModel.studyFragment.dict.size - 1)).apply()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
             }
         } else {
             Toast.makeText(
@@ -184,6 +181,6 @@ class TranslateFragment : Fragment(){
                 Toast.LENGTH_SHORT
             ).show()
         }
-    }*/
+    }
 
 }
