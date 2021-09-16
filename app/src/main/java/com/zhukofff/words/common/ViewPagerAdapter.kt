@@ -1,11 +1,11 @@
-package com.zhukofff.words
+package com.zhukofff.words.common
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.zhukofff.words.ui.study.StudyFragment
+import com.zhukofff.words.ui.translate.TranslateFragment
 
 private const val NUM_TABS = 2
 

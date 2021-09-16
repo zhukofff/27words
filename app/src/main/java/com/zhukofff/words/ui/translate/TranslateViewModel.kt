@@ -1,9 +1,10 @@
-package com.zhukofff.words
+package com.zhukofff.words.ui.translate
 
-import androidx.lifecycle.AndroidViewModel
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.zhukofff.words.db.PrefRepository
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.InputStream
@@ -20,12 +21,14 @@ class TranslateViewModel(private val prefRepository: PrefRepository) : ViewModel
     private val mutableTranslatedWords = MutableLiveData<ArrayList<String?>>()
     val translatedWords: LiveData<ArrayList<String?>> = mutableTranslatedWords
     lateinit var translate : String
-    private val list = ArrayList<String?>()
+    val list : MutableList<String> =  if (prefRepository.getDictionary() == null) arrayListOf() else prefRepository.getDictionary() as MutableList<String>
 
     private val mutableDictionary = MutableLiveData<ArrayList<String?>>()
-    val dictionary : LiveData<ArrayList<String?>> = mutableDictionary
+    val dictionary : LiveData<ArrayList<String?>> =  mutableDictionary
 
+    init {
 
+    }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job + CoroutineExceptionHandler { _, e -> throw e }
 
@@ -81,7 +84,8 @@ class TranslateViewModel(private val prefRepository: PrefRepository) : ViewModel
         // сразу добавлять в sharedPreference
         list.add(engWord)
         list.add(rusWord)
-        mutableDictionary.value = list
+        mutableDictionary.value = list as ArrayList<String?>
+        Log.v("check", "$list")
         prefRepository.setDictionary(mutableDictionary.value)
     }
 }

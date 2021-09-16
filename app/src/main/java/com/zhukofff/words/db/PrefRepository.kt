@@ -1,12 +1,15 @@
-package com.zhukofff.words
+package com.zhukofff.words.db
 
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import java.io.StringReader
 
 const val PREFERENCE_NAME = "27WORDS_DATA"
 
@@ -16,10 +19,10 @@ class PrefRepository(val context: Context) {
 
     private val pref: SharedPreferences = context.getSharedPreferences(PREF_DICTIONARY, Context.MODE_PRIVATE)
     private val editor = pref.edit()
-    private val gson = Gson()
+    private val gson = GsonBuilder().setLenient().create()
 
     val latestWords: Flow<List<String>?> = flow {
-        latestWords = getDictionary()
+        val latestWords = getDictionary()
         emit(latestWords)
     } .flowOn(Dispatchers.IO)
 
@@ -43,17 +46,19 @@ class PrefRepository(val context: Context) {
 
     fun setDictionary(dict: ArrayList<String?>?) {
         PREF_DICTIONARY.put(gson.toJson(dict))
-        latestWords
     }
 
     fun getDictionary() : List<String>? {
         PREF_DICTIONARY.getString().also {
-            return if (it!!.isNotEmpty())
+            return if (it!!.isNotEmpty()) {
+                val reader = StringReader(it)
+                val jsonReader = JsonReader(reader)
                 gson.fromJson(
-                    PREF_DICTIONARY.getString(),
+                    jsonReader,
                     ArrayList::class.java
                 ) as? ArrayList<String>
-            else null!!
+            }
+            else null
         }
     }
 }

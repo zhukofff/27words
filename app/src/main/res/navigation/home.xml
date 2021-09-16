@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home"
+    app:startDestination="@id/main">
+
+    <fragment
+        android:id="@+id/studyFragment"
+        android:name="com.zhukofff.words.ui.study.StudyFragment"
+        android:label="study"
+        tools:layout="@layout/fragment_study">
+    </fragment>
+
+    <fragment
+        android:id="@+id/gameFragment"
+        android:name="com.zhukofff.words.ui.game.GameFragment"
+        android:label="game"
+        tools:layout="@layout/fragment_game">
+        <argument
+            android:name="language"
+            app:argType="string"
+            android:defaultValue="1"/>
+        <action
+            android:id="@+id/action_game_to_study"
+            app:destination="@id/main">
+        </action>
+    </fragment>
+
+    <fragment android:id="@+id/main"
+        android:name="com.zhukofff.words.ui.MainFragment"
+        android:label="home"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_study_to_game"
+            app:destination="@id/gameFragment">
+            <argument
+                android:name="language"
+                app:argType="string"
+                android:defaultValue="1"/>
+        </action>
+    </fragment>
+</navigation>

@@ -1,10 +1,7 @@
-package com.zhukofff.words
+package com.zhukofff.words.ui.study
 
 import androidx.lifecycle.*
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import com.zhukofff.words.db.PrefRepository
 
 
 class StudyViewModel(private val pref: PrefRepository) : ViewModel() {
@@ -23,11 +20,16 @@ class StudyViewModel(private val pref: PrefRepository) : ViewModel() {
     val dictionary = mDictionary
 
     init {
-        viewModelScope.launch {
+        fetchDictionaryData()
+    }
+
+    fun fetchDictionaryData() {
+/*        viewModelScope.launch {
             pref.latestWords.collect {  latestWords ->
                 mDictionary.value = latestWords
             }
-        }
+        }*/
+        mDictionary.value = pref.getDictionary()
     }
 
 

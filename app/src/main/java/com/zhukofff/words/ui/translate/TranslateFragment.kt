@@ -1,11 +1,8 @@
-package com.zhukofff.words
+package com.zhukofff.words.ui.translate
 
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,14 +10,10 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import com.zhukofff.words.App
+import com.zhukofff.words.util.Language
+import com.zhukofff.words.R
 import com.zhukofff.words.databinding.FragmentTranslateBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import org.json.JSONObject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class TranslateFragment : Fragment(){
@@ -33,10 +26,6 @@ class TranslateFragment : Fragment(){
     private val translateViewModel by viewModel<TranslateViewModel>()
     private val app : App = App()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

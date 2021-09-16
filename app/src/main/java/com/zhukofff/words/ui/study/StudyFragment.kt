@@ -1,11 +1,8 @@
-package com.zhukofff.words
+package com.zhukofff.words.ui.study
 
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.provider.UserDictionary
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,35 +10,50 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import com.zhukofff.words.common.WordsAdapter
 import com.zhukofff.words.databinding.FragmentStudyBinding
+import com.zhukofff.words.ui.MainFragmentDirections
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
+const val TAG = "StudyFragment"
 class StudyFragment : Fragment() {
 
     private lateinit var binding : FragmentStudyBinding
     private val studyViewModel by viewModel<StudyViewModel>()
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentStudyBinding.inflate(inflater, container, false)
 
-
-        val dictionaryObserver = Observer<List<String>?> { dict ->
-            val wordsAdapter = WordsAdapter(dict)
-            binding.rvStudy.adapter = wordsAdapter
-        }
-
-        studyViewModel.dictionary.observe(viewLifecycleOwner, dictionaryObserver)
         return binding.root
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        studyViewModel.fetchDictionaryData()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val dictionaryObserver = Observer<List<String>?> { dict ->
+            if (dict != null) {
+                val wordsAdapter = WordsAdapter(dict)
+                binding.rvStudy.adapter = wordsAdapter
+            }
+        }
+
+        studyViewModel.dictionary.observe(viewLifecycleOwner, dictionaryObserver)
         binding.buttonStudy.setOnClickListener {
             learnWords()
         }
@@ -59,19 +71,18 @@ class StudyFragment : Fragment() {
 
     var dialogClickListener =
         DialogInterface.OnClickListener { dialog, which ->
-            val intent : Intent
+
             when (which) {
                 DialogInterface.BUTTON_POSITIVE -> {
-                    intent = Intent(activity, StudyActivityRus::class.java)
-                    startActivity(intent)
+                    val action = MainFragmentDirections.actionStudyToGame("russian")
+                    findNavController().navigate(action)
                 }
                 DialogInterface.BUTTON_NEGATIVE -> {
-                    intent = Intent(activity, StudyActivity::class.java)
-                    startActivity(intent)
+                    val action = MainFragmentDirections.actionStudyToGame("english")
+                    findNavController().navigate(action)
                 }
             }
         }
-
 
     private fun learnWords() {
         if (studyViewModel.dictionary.value!!.size < 20) {

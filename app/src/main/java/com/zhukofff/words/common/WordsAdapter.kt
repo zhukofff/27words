@@ -1,9 +1,7 @@
-package com.zhukofff.words
-import android.text.Editable
+package com.zhukofff.words.common
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.zhukofff.words.databinding.WordItemBinding
 import java.util.*
@@ -14,7 +12,7 @@ class WordsAdapter(private val dict: List<String>) : RecyclerView.Adapter<WordsA
     private var dictWithPairOfWords = ArrayList<String>()
     init {
         for (i in 0 until dict.size/2) {
-            dictWithPairOfWords.add(dict.get(i*2) + " - " + dict.get(i*2+1))
+                dictWithPairOfWords.add(dict.get(i*2) + " - " + dict.get(i*2+1))
         }
         Collections.sort(dictWithPairOfWords)
     }
@@ -28,8 +26,9 @@ class WordsAdapter(private val dict: List<String>) : RecyclerView.Adapter<WordsA
     }
 
     override fun getItemCount(): Int {
-        return dict.size/2
+        return dictWithPairOfWords.size
     }
+
 
     class WordViewHolder(private val binding: WordItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
@@ -44,17 +43,29 @@ class WordsAdapter(private val dict: List<String>) : RecyclerView.Adapter<WordsA
             }
         }
     }
+
+    companion object {
+        val DIFF_CALLBACK: DiffUtil.ItemCallback<ArrayList<String>> =
+            object : DiffUtil.ItemCallback<ArrayList<String>>() {
+
+                override fun areItemsTheSame(
+                    oldItem: ArrayList<String>,
+                    newItem: ArrayList<String>
+                ): Boolean {
+                    TODO("Not yet implemented")
+                }
+
+                override fun areContentsTheSame(
+                    oldItem: ArrayList<String>,
+                    newItem: ArrayList<String>
+                ): Boolean {
+                    TODO("Not yet implemented")
+                }
+            }
+    }
+
 }
 
 // TODO: using ROOM implement callback
-/*class WordCallback: DiffUtil.ItemCallback<ArrayList<String>>() {
 
-    override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
-        return oldItem == newItem
-    }
-
-    override fun areContentsTheSame(oldItem: String, newItem: String): Boolean {
-        oldItem == newItem
-    }
-}*/
 

@@ -1,7 +1,10 @@
 package com.zhukofff.words
 
+import com.zhukofff.words.db.PrefRepository
+import com.zhukofff.words.ui.game.GameViewModel
+import com.zhukofff.words.ui.study.StudyViewModel
+import com.zhukofff.words.ui.translate.TranslateViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
-import org.koin.core.context.GlobalContext.get
 import org.koin.dsl.module
 
 val repositoryModule = module {
@@ -16,5 +19,8 @@ val viewModelModule = module {
     }
     viewModel {
         TranslateViewModel(get())
+    }
+    viewModel {
+        GameViewModel(get())
     }
 }
