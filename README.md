@@ -15,3 +15,5 @@
 ## Architecture:
 - MVVM
 - Repository pattern
+## API
+- Yandex.Dictionary
