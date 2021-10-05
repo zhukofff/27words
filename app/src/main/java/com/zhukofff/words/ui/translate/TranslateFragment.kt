@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.zhukofff.words.App
 import com.zhukofff.words.util.Language
 import com.zhukofff.words.R
@@ -34,7 +35,7 @@ class TranslateFragment : Fragment(){
 
         binding = FragmentTranslateBinding.inflate(inflater, container, false)
 
-        val translateWordsObserver = Observer<ArrayList<String?>> {
+        val translateWordsObserver = Observer<List<String>?> {
             val translatedWordsAdapter = ArrayAdapter<String>(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
@@ -50,9 +51,6 @@ class TranslateFragment : Fragment(){
 
         translateViewModel.translatedWords.observe(viewLifecycleOwner, translateWordsObserver)
 
-        val dictionaryObserver = Observer<ArrayList<String?>> {
-
-        }
         return binding.root
     }
 
@@ -86,6 +84,12 @@ class TranslateFragment : Fragment(){
 
     }
 
+    override fun onResume() {
+        super.onResume()
+/*
+        translateViewModel.getDictionary()
+*/
+    }
     private fun goToLink(link: String) {
         val page: Intent = Intent(Intent.ACTION_VIEW)
         page.setData(Uri.parse(link))
@@ -161,7 +165,7 @@ class TranslateFragment : Fragment(){
                     Toast.LENGTH_LONG
                 ).show()
             } else {
-                translateViewModel.addToDictionary(engWord, rusWord)
+                translateViewModel.setDictionary(engWord, rusWord)
             }
         } else {
             Toast.makeText(

@@ -1,36 +1,37 @@
 package com.zhukofff.words.ui.study
 
+import android.util.Log
 import androidx.lifecycle.*
-import com.zhukofff.words.db.PrefRepository
+import com.zhukofff.words.db.Dictionary
+import com.zhukofff.words.db.UserPreferencesRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 
-class StudyViewModel(private val pref: PrefRepository) : ViewModel() {
+class StudyViewModel(private val pref: UserPreferencesRepository) : ViewModel() {
 
-    // для чего я создал StudyViewModel?
-    /*
-    Я столкнулся с проблемой передачи данных из одного фрагмента в другой.
-    Алгоритм такой:
-     TranslateFragment --> TranslateViewModel --> sharedPreferences --> StudyViewModel --> StudyFragment
+    val userPreferencesFlow = pref.userPreferencesSharedFlow
 
-     При загрузке нового экрана получаем данные из sharedPreference и уведомляем об этом фрагмент
-     */
-
-
-    private val mDictionary = MutableLiveData<List<String>?>()
-    val dictionary = mDictionary
+    lateinit var dictionary: Dictionary
 
     init {
-        fetchDictionaryData()
+        viewModelScope.launch {
+            userPreferencesFlow.collect {  dictionary = it }
+        }
     }
 
-    fun fetchDictionaryData() {
-/*        viewModelScope.launch {
-            pref.latestWords.collect {  latestWords ->
-                mDictionary.value = latestWords
+    fun deleteFromDictionary(word: String) {
+        for (i in 0 until dictionary.words!!.size) {
+            if (dictionary.words!!.get(i).equals(word)) {
+                dictionary.words!!.removeAt(i)
+                dictionary.words!!.removeAt(i)
+                    break
             }
-        }*/
-        mDictionary.value = pref.getDictionary()
+        }
+        viewModelScope.launch {
+            pref.setDictionary(dictionary.words!!)
+        }
+        Log.v("study", "${dictionary.words}")
     }
-
-
 }

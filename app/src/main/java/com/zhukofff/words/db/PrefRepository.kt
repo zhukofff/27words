@@ -2,61 +2,66 @@ package com.zhukofff.words.db
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.google.gson.Gson
+import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.*
 import com.google.gson.GsonBuilder
 import com.google.gson.stream.JsonReader
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.*
+import java.io.IOException
 import java.io.StringReader
 
-const val PREFERENCE_NAME = "27WORDS_DATA"
+private object PreferencesKeys {
+    val DICTIONARY = stringPreferencesKey("dictionary")
+}
+class UserPreferencesRepository(val userPreferencesStore: DataStore<Preferences>,
+                                private val externalScope: CoroutineScope
+) {
 
-const val PREF_DICTIONARY = "PREF_DICTIONARY"
-
-class PrefRepository(val context: Context) {
-
-    private val pref: SharedPreferences = context.getSharedPreferences(PREF_DICTIONARY, Context.MODE_PRIVATE)
-    private val editor = pref.edit()
     private val gson = GsonBuilder().setLenient().create()
 
-    val latestWords: Flow<List<String>?> = flow {
-        val latestWords = getDictionary()
-        emit(latestWords)
-    } .flowOn(Dispatchers.IO)
+    val userPreferencesFlow: Flow<Dictionary> = userPreferencesStore.data
+        .catch { exception ->
+            if (exception is IOException)
+                emit(emptyPreferences())
+            else
+                throw exception
+        }
+        .map { preferences ->
+            val words = preferences[PreferencesKeys.DICTIONARY]
+            Dictionary(transformDictionary(words))
+        }
 
-    private fun String.put(long: Long) {
-        editor.putLong(this, long)
-        editor.commit()
+    val userPreferencesSharedFlow = userPreferencesFlow.shareIn(
+        externalScope,
+        started = SharingStarted.WhileSubscribed(),
+        replay = 1
+    )
+
+    suspend fun setDictionary(dict: MutableList<String>?) {
+        userPreferencesStore.edit { preferences ->
+            preferences[PreferencesKeys.DICTIONARY] = gson.toJson(dict)
+            Log.v("preferences", "${preferences[PreferencesKeys.DICTIONARY]}")
+        }
     }
 
-    private fun String.put(int: Int) {
-        editor.putInt(this, int)
-        editor.commit()
+    suspend fun getFromDataStore() = userPreferencesStore.data.map {
+        Dictionary(
+            words = transformDictionary(it[PreferencesKeys.DICTIONARY])
+        )
     }
 
-    private fun String.put(string: String) {
-        editor.putString(this, string)
-        editor.commit()
-    }
-
-
-    private fun String.getString() = pref.getString(this, "")
-
-    fun setDictionary(dict: ArrayList<String?>?) {
-        PREF_DICTIONARY.put(gson.toJson(dict))
-    }
-
-    fun getDictionary() : List<String>? {
-        PREF_DICTIONARY.getString().also {
-            return if (it!!.isNotEmpty()) {
+    private fun transformDictionary(dict: String?) : MutableList<String>? {
+        dict.also {
+             return if (it!!.isNotEmpty()) {
                 val reader = StringReader(it)
                 val jsonReader = JsonReader(reader)
                 gson.fromJson(
                     jsonReader,
                     ArrayList::class.java
-                ) as? ArrayList<String>
+                ) as MutableList<String>?
             }
             else null
         }

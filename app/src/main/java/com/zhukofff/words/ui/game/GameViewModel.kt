@@ -1,45 +1,49 @@
 package com.zhukofff.words.ui.game
 
+import android.text.Html
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.StrikethroughSpan
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.zhukofff.words.db.PrefRepository
+import androidx.lifecycle.*
+import com.zhukofff.words.db.Dictionary
+import com.zhukofff.words.db.Mistakes
+import com.zhukofff.words.db.UserPreferencesRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 
-class GameViewModel(private val pref: PrefRepository) : ViewModel() {
+class GameViewModel(private val pref: UserPreferencesRepository) : ViewModel() {
 
     // pseudorandom calculating
     // get words from repository
-    private val mDictionary = MutableLiveData<List<String>>()
-    private val dictionary : LiveData<List<String>> = mDictionary
+    private val userPreferencesFlow = pref.userPreferencesSharedFlow
+    private lateinit var dictionary: Dictionary
+
+    init {
+        viewModelScope.launch {
+            userPreferencesFlow.collect {
+                dictionary = it
+            }
+        }
+    }
+
     private val mDisplayWords = MutableLiveData<ArrayList<String?>>()
     val displayWords : LiveData<ArrayList<String?>> = mDisplayWords
     private val lengthLearningWords = 10
     private val indexesOfLearningWords = ArrayList<Int>()
-    val mistakes = ArrayList<String>()
+    val mistakes = ArrayList<Mistakes>()
     private val mDisplayScore = MutableLiveData<Int>()
     val displayScore : LiveData<Int> = mDisplayScore
     private var score = 0
 
-    init {
-        fetchDictionaryData()
-    }
-
-    private fun fetchDictionaryData() {
-        /*viewModelScope.launch {
-            pref.latestWords.collect { dictionary ->
-                mDictionary.value = dictionary
-            }
-        }*/
-        mDictionary.value = pref.getDictionary()
-    }
-
     fun generateLearningWords(language: String) {
 
-        for (i in 0 until dictionary.value!!.size)
-            Log.v("words", "${dictionary.value?.get(i)}")
+        for (i in 0 until dictionary.words!!.size)
+            Log.v("words", "${dictionary.words!!.get(i)}")
 
         // generate empty array
         for (i in 0 until 10)
@@ -47,7 +51,7 @@ class GameViewModel(private val pref: PrefRepository) : ViewModel() {
 
         var i = 0
         while (i < indexesOfLearningWords.size) {
-            val index = Random.nextInt(dictionary.value!!.size)
+            val index = Random.nextInt(dictionary.words!!.size)
             if (language == "english")
                 indexesOfLearningWords[i] = makeEven(index)
             else
@@ -70,7 +74,7 @@ class GameViewModel(private val pref: PrefRepository) : ViewModel() {
         var returnNumber = 0
         if (number % 2 == 0)
             returnNumber = number
-        else if (number % 2 != 0 && number != (dictionary.value?.size?.minus(1)))
+        else if (number % 2 != 0 && number != (dictionary.words!!.size?.minus(1)))
             returnNumber = number.plus(1)
         else
             returnNumber = number.minus(1)
@@ -96,23 +100,25 @@ class GameViewModel(private val pref: PrefRepository) : ViewModel() {
         val listFakeWords = ArrayList<String?>()
 
         if (language == "english") {
-            listFakeWords.add(dictionary.value?.get(makeOdd(Random.nextInt(dictionary.value!!.size))))
-            listFakeWords.add(dictionary.value?.get(makeOdd(Random.nextInt(dictionary.value!!.size))))
-            listFakeWords.add(dictionary.value?.get(indexesOfLearningWords[currentIndex] + 1))
-        } else {
-            listFakeWords.add(dictionary.value?.get(makeEven(Random.nextInt(dictionary.value!!.size))))
-            listFakeWords.add(dictionary.value?.get(makeEven(Random.nextInt(dictionary.value!!.size))))
-            listFakeWords.add(dictionary.value?.get(indexesOfLearningWords[currentIndex] - 1))
+            listFakeWords.add(dictionary.words!!.get(makeOdd(Random.nextInt(dictionary.words!!.size))))
+            listFakeWords.add(dictionary.words!!.get(makeOdd(Random.nextInt(dictionary.words!!.size))))
+            listFakeWords.add(dictionary.words!!.get(indexesOfLearningWords[currentIndex] + 1))
+        } else {!!
+            listFakeWords.add(dictionary.words!!.get(makeEven(Random.nextInt(dictionary.words!!.size))))
+            listFakeWords.add(dictionary.words!!.get(makeEven(Random.nextInt(dictionary.words!!.size))))
+            listFakeWords.add(dictionary.words!!.get(indexesOfLearningWords[currentIndex] - 1))
         }
 
-        listFakeWords.add(dictionary.value?.get(indexesOfLearningWords[currentIndex]))
+        listFakeWords.add(dictionary.words!!.get(indexesOfLearningWords[currentIndex]))
 
         var i = 0
         while (i < 2) {
             if (language == "english")
-                listFakeWords[i] = dictionary.value?.get(makeOdd((Random.nextInt(dictionary.value!!.size))))
+                listFakeWords[i] = dictionary.words!!.get(
+                    makeOdd((Random.nextInt(dictionary.words!!.size))))
             else
-                listFakeWords[i] = dictionary.value?.get(makeEven((Random.nextInt(dictionary.value!!.size))))
+                listFakeWords[i] = dictionary.words!!.get(
+                    makeEven((Random.nextInt(dictionary.words!!.size))))
 
             for (j in 0 until 3)
                 if (listFakeWords[i] == listFakeWords[j] && i != j) {
@@ -132,10 +138,17 @@ class GameViewModel(private val pref: PrefRepository) : ViewModel() {
     }
 
     fun checkRightOrWrong(step: Int, userChoice: String, language: String) {
-        if (language == "english" && dictionary.value?.get(indexesOfLearningWords[step] + 1) != userChoice) {
-            mistakes.add(dictionary.value?.get(indexesOfLearningWords[step]) + " - " + userChoice)
-        } else if (language == "russian" && dictionary.value?.get(indexesOfLearningWords[step] - 1) != userChoice){
-            mistakes.add(dictionary.value?.get(indexesOfLearningWords[step]) + " - " + userChoice)
+        if (language == "english" && dictionary.words!!.get(indexesOfLearningWords[step] + 1) != userChoice) {
+            mistakes.add(Mistakes(
+                dictionary.words!!.get(indexesOfLearningWords[step]),
+                dictionary.words!!.get(indexesOfLearningWords[step] + 1),
+                userChoice))
+        } else if (language == "russian" && dictionary.words!!.get(indexesOfLearningWords[step] - 1) != userChoice){
+            mistakes.add(Mistakes(
+                dictionary.words!!.get(indexesOfLearningWords[step]),
+                dictionary.words!!.get(indexesOfLearningWords[step] - 1),
+                userChoice
+            ))
         } else {
             score++
             mDisplayScore.value = score

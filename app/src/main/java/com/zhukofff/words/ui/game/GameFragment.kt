@@ -1,18 +1,23 @@
 package com.zhukofff.words.ui.game
 
 import android.os.Bundle
+import android.text.style.StrikethroughSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.zhukofff.words.R
+import com.zhukofff.words.common.MistakesAdapter
 import com.zhukofff.words.databinding.FragmentGameBinding
+import com.zhukofff.words.db.Mistakes
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.random.Random
+
 
 class GameFragment() : Fragment(){
 
@@ -86,7 +91,7 @@ class GameFragment() : Fragment(){
             getNextWords()
         }
         binding.back.setOnClickListener {
-            findNavController().navigate(R.id.action_game_to_study)
+            Navigation.findNavController(requireView()).popBackStack()
         }
     }
 
@@ -97,10 +102,7 @@ class GameFragment() : Fragment(){
             binding.translate3.visibility = View.GONE
             binding.word.setText("ошибки")
 
-            val mistakesAdapter = ArrayAdapter<String>(requireContext(),
-                android.R.layout.simple_list_item_1,
-                gameViewModel.mistakes
-            )
+            val mistakesAdapter = MistakesAdapter(gameViewModel.mistakes)
             binding.mistakes.adapter = mistakesAdapter
         } else {
             step++

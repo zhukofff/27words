@@ -1,11 +1,11 @@
-package com.zhukofff.words.ui.translate
+        package com.zhukofff.words.ui.translate
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.zhukofff.words.db.PrefRepository
+import androidx.lifecycle.*
+import com.zhukofff.words.db.Dictionary
+import com.zhukofff.words.db.UserPreferencesRepository
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import org.json.JSONObject
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -14,21 +14,47 @@ import java.net.URL
 import kotlin.coroutines.CoroutineContext
 
 
-class TranslateViewModel(private val prefRepository: PrefRepository) : ViewModel(), CoroutineScope {
+class TranslateViewModel(private val pref: UserPreferencesRepository) : ViewModel(), CoroutineScope {
 
     private val job = SupervisorJob()
 
-    private val mutableTranslatedWords = MutableLiveData<ArrayList<String?>>()
-    val translatedWords: LiveData<ArrayList<String?>> = mutableTranslatedWords
+    private val mutableTranslatedWords = MutableLiveData<List<String>?>()
+    val translatedWords: LiveData<List<String>?> = mutableTranslatedWords
     lateinit var translate : String
-    val list : MutableList<String> =  if (prefRepository.getDictionary() == null) arrayListOf() else prefRepository.getDictionary() as MutableList<String>
-
-    private val mutableDictionary = MutableLiveData<ArrayList<String?>>()
-    val dictionary : LiveData<ArrayList<String?>> =  mutableDictionary
+    val dictionarySharedFlow = pref.userPreferencesSharedFlow
+    lateinit var _dictionaryUiModel: Dictionary
 
     init {
-
+         viewModelScope.launch {
+             dictionarySharedFlow.collect {
+                _dictionaryUiModel = it
+             }
+        }
     }
+
+
+ /*   fun getDictionary() {
+        viewModelScope.launch {
+            viewModelScope.launch {
+                dictionaryUiModel = pref.userPreferencesFlow.asLiveData()
+                _dictionaryUiModel = dictionaryUiModel.value
+            }
+        }
+    }*/
+
+    fun setDictionary(word: String, translate: String) {
+        val dict = mutableListOf("${word}", "${translate}")
+        if (_dictionaryUiModel?.words != null) {
+            for (i in 0 until _dictionaryUiModel!!.words!!.size)
+                dict.add(_dictionaryUiModel!!.words!![i])
+        }
+        _dictionaryUiModel = Dictionary(dict)
+        viewModelScope.launch {
+            pref.setDictionary(_dictionaryUiModel!!.words)
+        }
+        Log.v("translate", "${_dictionaryUiModel.words}")
+    }
+
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job + CoroutineExceptionHandler { _, e -> throw e }
 
@@ -39,7 +65,7 @@ class TranslateViewModel(private val prefRepository: PrefRepository) : ViewModel
 
     fun downloadHtml(vararg urls: String?) =
         launch {
-            val translatedWordsArray = ArrayList<String?>()
+            val translatedWordsArray = ArrayList<String>()
             translate = ""
             val url: URL = URL(urls[0])
             val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
@@ -69,23 +95,13 @@ class TranslateViewModel(private val prefRepository: PrefRepository) : ViewModel
     fun isPairOfWordsInDict(engWord: String, rusWord: String) : Boolean {
         try {
         // доставать информацию о размере словаря из sharedPreferences
-        val dict  = prefRepository.getDictionary()
-            for (i in 0 until dict!!.size step 2) {
-                if (dict.get(i).equals(engWord) && dict.get(i + 1).equals(rusWord))
+            for (i in 0 until _dictionaryUiModel.words!!.size step 2) {
+                if (_dictionaryUiModel.words!!.get(i).equals(engWord) && _dictionaryUiModel.words!!.get(i + 1).equals(rusWord))
                     return true
             }
         } catch(e: Exception) {
             e.printStackTrace()
         }
         return false
-    }
-
-    fun addToDictionary(engWord: String, rusWord: String) {
-        // сразу добавлять в sharedPreference
-        list.add(engWord)
-        list.add(rusWord)
-        mutableDictionary.value = list as ArrayList<String?>
-        Log.v("check", "$list")
-        prefRepository.setDictionary(mutableDictionary.value)
     }
 }

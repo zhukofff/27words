@@ -21,4 +21,6 @@ class ViewPagerAdapter(fm: FragmentManager, lifecycle: Lifecycle) : FragmentStat
         }
         return StudyFragment()
     }
+
+
 }
