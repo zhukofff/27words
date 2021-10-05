@@ -31,7 +31,10 @@ class UserPreferencesRepository(val userPreferencesStore: DataStore<Preferences>
         }
         .map { preferences ->
             val words = preferences[PreferencesKeys.DICTIONARY]
-            Dictionary(transformDictionary(words))
+            if (words == null)
+                Dictionary(mutableListOf("Hello", "привет"))
+            else
+                Dictionary(transformDictionary(words))
         }
 
     val userPreferencesSharedFlow = userPreferencesFlow.shareIn(
