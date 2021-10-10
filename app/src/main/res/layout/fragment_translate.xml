@@ -126,7 +126,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"/>
 
-
         <TextView
             android:id="@+id/creating_by_ubc"
             android:layout_width="wrap_content"

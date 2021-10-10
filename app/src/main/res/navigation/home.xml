@@ -7,14 +7,14 @@
 
     <fragment
         android:id="@+id/studyFragment"
-        android:name="com.zhukofff.words.ui.study.StudyFragment"
+        android:name="com.ubc.words.ui.study.StudyFragment"
         android:label="study"
         tools:layout="@layout/fragment_study">
     </fragment>
 
     <fragment
         android:id="@+id/gameFragment"
-        android:name="com.zhukofff.words.ui.game.GameFragment"
+        android:name="com.ubc.words.ui.game.GameFragment"
         android:label="game"
         tools:layout="@layout/fragment_game">
         <argument
@@ -28,7 +28,7 @@
     </fragment>
 
     <fragment android:id="@+id/main"
-        android:name="com.zhukofff.words.ui.MainFragment"
+        android:name="com.ubc.words.ui.MainFragment"
         android:label="home"
         tools:layout="@layout/fragment_main">
         <action
