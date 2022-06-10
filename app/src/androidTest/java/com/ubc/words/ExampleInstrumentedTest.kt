@@ -1,4 +1,4 @@
-package com.ubc.words
+package com.ubc.`27words`
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

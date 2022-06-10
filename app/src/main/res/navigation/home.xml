@@ -14,8 +14,8 @@
 
     <fragment
         android:id="@+id/gameFragment"
-        android:name="com.ubc.words.ui.game.GameFragment"
         android:label="game"
+        android:name="com.ubc.words.ui.game.GameFragment"
         tools:layout="@layout/fragment_game">
         <argument
             android:name="language"

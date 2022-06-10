@@ -1,4 +1,4 @@
-package com.ubc.words
+package com.ubc.`27words`
 
 import org.junit.Test
 

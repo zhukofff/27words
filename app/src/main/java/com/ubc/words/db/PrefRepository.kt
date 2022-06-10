@@ -1,4 +1,4 @@
-package com.ubc.words.db
+    package com.ubc.words.db
 
 import android.util.Log
 import androidx.datastore.core.DataStore
@@ -13,8 +13,9 @@ import java.io.StringReader
 private object PreferencesKeys {
     val DICTIONARY = stringPreferencesKey("dictionary")
 }
-class UserPreferencesRepository(val userPreferencesStore: DataStore<Preferences>,
-                                private val externalScope: CoroutineScope
+
+class UserPreferencesRepository(
+    private val userPreferencesStore: DataStore<Preferences>
 ) {
 
     private val gson = GsonBuilder().setLenient().create()
@@ -34,23 +35,12 @@ class UserPreferencesRepository(val userPreferencesStore: DataStore<Preferences>
                 Dictionary(transformDictionary(words))
         }
 
-    val userPreferencesSharedFlow = userPreferencesFlow.shareIn(
-        externalScope,
-        started = SharingStarted.WhileSubscribed(),
-        replay = 1
-    )
 
     suspend fun setDictionary(dict: MutableList<String>?) {
         userPreferencesStore.edit { preferences ->
             preferences[PreferencesKeys.DICTIONARY] = gson.toJson(dict)
             Log.v("preferences", "${preferences[PreferencesKeys.DICTIONARY]}")
         }
-    }
-
-    suspend fun getFromDataStore() = userPreferencesStore.data.map {
-        Dictionary(
-            words = transformDictionary(it[PreferencesKeys.DICTIONARY])
-        )
     }
 
     private fun transformDictionary(dict: String?) : MutableList<String>? {

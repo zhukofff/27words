@@ -6,15 +6,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.ubc.words.App
-import com.ubc.words.util.Language
 import com.ubc.words.R
 import com.ubc.words.databinding.FragmentTranslateBinding
+import com.ubc.words.util.Language
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class TranslateFragment : Fragment(){
@@ -94,7 +93,7 @@ class TranslateFragment : Fragment(){
     }
 
     private fun switchLanguage() {
-        var firstLanguage = binding.textFirstLanguage.text.toString()
+        val firstLanguage = binding.textFirstLanguage.text.toString()
         when (firstLanguage) {
             Language.English.toString() -> switchToRussian()
             Language.Russian.toString() -> switchToEnglish()
@@ -138,7 +137,7 @@ class TranslateFragment : Fragment(){
             }
             val url: String =
                 "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=" + apiKey + "&text=" + text + "&lang=" + lang
-            translateViewModel.downloadHtml(url)
+            translateViewModel.queryToDictionaryApi(url)
         }
     }
 

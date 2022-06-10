@@ -8,12 +8,12 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.ubc.words.db.UserPreferencesRepository
 import com.ubc.words.ui.game.GameViewModel
 import com.ubc.words.ui.study.StudyViewModel
-import com.ubc.words.ui.translate.TranslateViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import com.ubc.words.ui.translate.TranslateViewModel
 
 const val USER_PREFERENCES_NAME = "user_preferences"
 
@@ -33,7 +33,7 @@ val dataStoreModule = module {
 
 val repositoryModule = module {
     single {
-        UserPreferencesRepository(get(), get())
+        UserPreferencesRepository(get())
     }
 
     factory { SupervisorJob() }

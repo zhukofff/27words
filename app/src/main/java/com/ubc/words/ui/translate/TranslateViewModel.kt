@@ -1,6 +1,8 @@
-        package com.ubc.words.ui.translate
+package com.ubc.words.ui.translate
 
+import android.util.Log
 import androidx.lifecycle.*
+
 import com.ubc.words.db.Dictionary
 import com.ubc.words.db.UserPreferencesRepository
 import kotlinx.coroutines.*
@@ -19,9 +21,9 @@ class TranslateViewModel(private val pref: UserPreferencesRepository) : ViewMode
 
     private val mutableTranslatedWords = MutableLiveData<List<String>?>()
     val translatedWords: LiveData<List<String>?> = mutableTranslatedWords
-    lateinit var translate : String
-    val dictionarySharedFlow = pref.userPreferencesSharedFlow
+    val dictionarySharedFlow = pref.userPreferencesFlow
     lateinit var _dictionaryUiModel: Dictionary
+
 
     init {
          viewModelScope.launch {
@@ -44,39 +46,45 @@ class TranslateViewModel(private val pref: UserPreferencesRepository) : ViewMode
         // Log.v("translate", "${_dictionaryUiModel.words}")
     }
 
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + job + CoroutineExceptionHandler { _, e -> throw e }
-
     override fun onCleared() {
         super.onCleared()
         coroutineContext.cancelChildren()
     }
 
-    fun downloadHtml(vararg urls: String?) =
-        launch {
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + job + CoroutineExceptionHandler { _, e -> throw e }
+
+    fun queryToDictionaryApi(url: String) =
+        launch { // запуск новой сопрограммы в фоне
             val translatedWordsArray = ArrayList<String>()
-            translate = ""
-            val url: URL = URL(urls[0])
-            val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
-            val input: InputStream = urlConnection.inputStream
-            val reader: InputStreamReader = InputStreamReader(input)
-            var data = reader.read()
-            while (data != -1) {
-                translate += data.toChar()
-                data = reader.read()
-            }
-            val jsonObject = JSONObject(translate)
-            val defArray = jsonObject.getJSONArray("def")
-            for (i in 0 until defArray.length()) {
-                val defObject = defArray.getJSONObject(i)
-                val trArray = defObject.getJSONArray("tr")
-                for (j in 0 until trArray.length()) {
-                    val trArrayItem = trArray.getJSONObject(j)
-                    translatedWordsArray.add(trArrayItem.getString("text"))
+            var translate = ""
+            try {
+                val url: URL = URL(url)
+                val urlConnection = url.openConnection()
+                val input: InputStream = urlConnection.inputStream
+                val reader: InputStreamReader = InputStreamReader(input)
+                var data = reader.read()
+                while (data != -1) {
+                    translate += data.toChar()
+                    data = reader.read()
                 }
+                val jsonObject = JSONObject(translate)
+                val defArray = jsonObject.getJSONArray("def")
+                // Поиск по массиву словарных статей
+                for (i in 0 until defArray.length()) {
+                    val defObject = defArray.getJSONObject(i)
+                    val trArray = defObject.getJSONArray("tr")
+                    // сохранение перевода слов и фраз
+                    for (j in 0 until trArray.length()) {
+                        val trArrayItem = trArray.getJSONObject(j)
+                        translatedWordsArray.add(trArrayItem.getString("text"))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.v("TranslateViewModel: ", e.toString())
             }
-            // так как поток не main, а IO -- дёргаем колбек для отработки присваивания уже после
-            // фонового потока
+            // так как поток не main, а IO -- дёргаем колбек для присваивания результатов
+            // асинхронной функции уже после выполнения её выполнения
             mutableTranslatedWords.postValue(translatedWordsArray)
         }
 

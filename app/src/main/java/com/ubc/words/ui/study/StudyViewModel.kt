@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class StudyViewModel(private val pref: UserPreferencesRepository) : ViewModel() {
 
-    val userPreferencesFlow = pref.userPreferencesSharedFlow
+    val userPreferencesFlow = pref.userPreferencesFlow
 
     lateinit var dictionary: Dictionary
 

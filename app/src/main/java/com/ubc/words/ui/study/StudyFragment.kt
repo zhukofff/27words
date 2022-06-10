@@ -11,12 +11,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.ubc.words.R
 import com.ubc.words.common.RecyclerItemClickListener
 import com.ubc.words.common.WordsAdapter
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.ubc.words.databinding.FragmentStudyBinding
 import com.ubc.words.ui.MainFragmentDirections
 import kotlinx.coroutines.flow.collect
-import org.koin.androidx.viewmodel.ext.android.viewModel
+
 
 const val TAG = "StudyFragment"
 class StudyFragment : Fragment() {
@@ -38,7 +40,7 @@ class StudyFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycleScope.launchWhenStarted {
-            studyViewModel.userPreferencesFlow.collect { dict ->
+            studyViewModel.userPreferencesFlow.collect{ dict ->
                 if (dict != null) {
                     val wordsAdapter = dict.words?.let {
                         WordsAdapter(it)
@@ -72,7 +74,7 @@ class StudyFragment : Fragment() {
                     .setPositiveButton("Yes", object: DialogInterface.OnClickListener{
                         override fun onClick(dialog: DialogInterface?, which: Int) {
                             val word = (binding.rvStudy.findViewHolderForAdapterPosition(position)?.
-                            itemView?.findViewById<TextView>(com.ubc.words.R.id.text_word_item))!!
+                            itemView?.findViewById<TextView>(R.id.text_word_item))!!
                                 .text.toString()
                             studyViewModel.deleteFromDictionary(word)
                         }

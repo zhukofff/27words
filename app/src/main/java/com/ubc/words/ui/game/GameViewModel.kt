@@ -14,7 +14,7 @@ class GameViewModel(private val pref: UserPreferencesRepository) : ViewModel() {
 
     // pseudorandom calculating
     // get words from repository
-    private val userPreferencesFlow = pref.userPreferencesSharedFlow
+    private val userPreferencesFlow = pref.userPreferencesFlow
     private lateinit var dictionary: Dictionary
 
     init {
